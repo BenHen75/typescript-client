@@ -7,7 +7,7 @@ Ce projet est destiné aux développeurs qui souhaitent intégrer des fonctionna
 ## Installation
 
 ```shell
-composer require @fftt-api/typescript-client
+npm add @fftt-api/typescript-client
 ```
 
 ## Utilisation
