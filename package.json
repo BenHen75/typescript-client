@@ -1,6 +1,6 @@
 {
     "name": "@fftt-api/typescript-client",
-    "version": "0.0.0",
+    "version": "1.0.0",
     "description": "Client TypeScript non-officiel de l'API FFTT 🏓",
     "license": "MIT",
     "bin": {
