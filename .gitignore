@@ -1,0 +1,11 @@
+# os specific
+.DS_Store
+
+# editor specific
+.idea/
+.claude/
+
+# project specific
+/node_modules/
+dist/
+_private_/
