@@ -4,9 +4,10 @@
     "description": "Client TypeScript non-officiel de l'API FFTT 🏓",
     "license": "MIT",
     "bin": {
-        "serial": "./dist/serial.mjs"
+        "serial": "./bin/serial.mjs"
     },
     "files": [
+        "bin",
         "dist",
         "README.md",
         "LICENSE"
