@@ -24,7 +24,8 @@ console.log(`Bonjour ${joueur.nom} ${joueur.prenom} !`);
 
 Les identifiants nécessaires pour utiliser ce client sont disponibles sur [le site de la FFTT](https://www.fftt.com/api/). Vous devez vous inscrire et obtenir une paire d'identifiants (APP_ID, APP_KEY) pour pouvoir utiliser ce client.
 
-L'API demande également de fournir un numéro de série (SERIAL) unique qui sera affecté de façon permanente à chacun des utilisateurs de cette librairie. Il prend la forme d'une chaîne de 15 caractères aléatoires contenant des chiffres et des lettres `[a-z][A-Z][0-9]`).
+L'API demande également de fournir un numéro de série (SERIAL) unique qui sera affecté de façon permanente à chacun 
+des utilisateurs de cette librairie. Il prend la forme d'une chaîne de 15 caractères aléatoires contenant des chiffres et des lettres (`[a-z][A-Z][0-9]`).
 
 Vous pouvez générer un numéro de série aléatoire en CLI avec la commande :
 
