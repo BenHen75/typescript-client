@@ -3,8 +3,9 @@
     "version": "1.0.0",
     "description": "Client TypeScript non-officiel de l'API FFTT 🏓",
     "license": "MIT",
+    "repository": "https://github.com/fftt-api/typescript-client",
     "bin": {
-        "serial": "./bin/serial.mjs"
+        "serial": "./bin/run.mjs"
     },
     "files": [
         "bin",
