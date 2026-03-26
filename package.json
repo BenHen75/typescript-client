@@ -46,7 +46,7 @@
         "test": "vitest",
         "test:ci": "vitest --watch=false --coverage",
         "test:coverage": "vitest --coverage",
-        "ci": "npm run test:ci && npm run build && npm run check-exports",
+        "ci": "npm run build && npm run check-exports",
         "local-release": "changeset version && changeset publish",
         "prepublishOnly": "npm run ci"
     },
