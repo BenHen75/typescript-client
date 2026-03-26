@@ -1,0 +1,30 @@
+export const CategorieLicenceSportive = {
+	MOINS_DE_9: '-9',
+	MOINS_DE_10: '-10',
+	MOINS_DE_11: '-11',
+	MOINS_DE_12: '-12',
+	MOINS_DE_13: '-13',
+	MOINS_DE_14: '-14',
+	MOINS_DE_15: '-15',
+	MOINS_DE_16: '-16',
+	MOINS_DE_17: '-17',
+	MOINS_DE_18: '-18',
+	MOINS_DE_19: '-19',
+	MOINS_DE_40: '-40',
+	MOINS_DE_45: '-45',
+	MOINS_DE_50: '-50',
+	MOINS_DE_55: '-55',
+	MOINS_DE_60: '-60',
+	MOINS_DE_65: '-65',
+	MOINS_DE_70: '-70',
+	MOINS_DE_75: '-75',
+	MOINS_DE_80: '-80',
+	MOINS_DE_85: '-85',
+	MOINS_DE_90: '-90',
+	MOINS_DE_95: '-95',
+	MOINS_DE_100: '-100',
+	MOINS_DE_105: '-105',
+} as const;
+
+export type CategorieLicenceSportive =
+	(typeof CategorieLicenceSportive)[keyof typeof CategorieLicenceSportive];

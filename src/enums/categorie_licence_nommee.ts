@@ -1,0 +1,56 @@
+import type { EnumKey } from '#utils/enum_utils';
+
+export const CategorieLicenceNommee = {
+	POUSSIN: 'Poussin',
+	BENJAMIN_1: 'Benjamins 1',
+	BENJAMIN_2: 'Benjamins 2',
+	MINIME_1: 'Minimes 1',
+	MINIME_2: 'Minimes 2',
+	CADET_1: 'Cadets 1',
+	CADET_2: 'Cadets 2',
+	JUNIOR_1: 'Juniors 1',
+	JUNIOR_2: 'Juniors 2',
+	JUNIOR_3: 'Juniors 3',
+	JUNIOR_4: 'Juniors 4',
+	SENIOR: 'Seniors',
+	VETERAN_40: 'Veteran 40',
+	VETERAN_45: 'Veteran 45',
+	VETERAN_50: 'Veteran 50',
+	VETERAN_55: 'Veteran 55',
+	VETERAN_60: 'Veteran 60',
+	VETERAN_65: 'Veteran 65',
+	VETERAN_70: 'Veteran 70',
+	VETERAN_75: 'Veteran 75',
+	VETERAN_80: 'Veteran 80',
+	VETERAN_85: 'Veteran 85',
+	VETERAN_90: 'Veteran 90',
+} as const;
+
+export type CategorieLicenceNommee =
+	(typeof CategorieLicenceNommee)[keyof typeof CategorieLicenceNommee];
+
+export const CategorieLicenceNommeeDict = {
+	POUSSIN: 'Poussin·e',
+	BENJAMIN_1: 'Benjamin·es 1',
+	BENJAMIN_2: 'Benjamin·es 2',
+	MINIME_1: 'Minimes 1',
+	MINIME_2: 'Minimes 2',
+	CADET_1: 'Cadet·tes 1',
+	CADET_2: 'Cadet·tes 2',
+	JUNIOR_1: 'Juniors 1',
+	JUNIOR_2: 'Juniors 2',
+	JUNIOR_3: 'Juniors 3',
+	JUNIOR_4: 'Juniors 4',
+	SENIOR: 'Seniors',
+	VETERAN_40: 'Vétéran 40',
+	VETERAN_45: 'Vétéran 45',
+	VETERAN_50: 'Vétéran 50',
+	VETERAN_55: 'Vétéran 55',
+	VETERAN_60: 'Vétéran 60',
+	VETERAN_65: 'Vétéran 65',
+	VETERAN_70: 'Vétéran 70',
+	VETERAN_75: 'Vétéran 75',
+	VETERAN_80: 'Vétéran 80',
+	VETERAN_85: 'Vétéran 85',
+	VETERAN_90: 'Vétéran 90',
+} satisfies Record<EnumKey<typeof CategorieLicenceNommee>, string>;
