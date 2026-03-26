@@ -44,7 +44,9 @@
         "lint": "oxlint",
         "lint:fix": "oxlint --fix",
         "test": "vitest",
-        "ci": "npm run test && npm run build && npm run check-exports",
+        "test:ci": "vitest --watch=false --coverage",
+        "test:coverage": "vitest --coverage",
+        "ci": "npm run test:ci && npm run build && npm run check-exports",
         "local-release": "changeset version && changeset publish",
         "prepublishOnly": "npm run ci"
     },
@@ -64,6 +66,7 @@
         "@types/md5": "2.3.6",
         "@types/node": "25.5.0",
         "@typescript/native-preview": "7.0.0-dev.20260326.1",
+        "@vitest/coverage-v8": "4.1.2",
         "oxfmt": "0.42.0",
         "oxlint": "1.57.0",
         "oxlint-tsgolint": "0.17.4",
