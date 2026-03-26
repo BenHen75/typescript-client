@@ -1,6 +1,6 @@
 {
     "name": "@fftt-api/typescript-client",
-    "version": "1.0.0",
+    "version": "0.0.0",
     "description": "Client TypeScript non-officiel de l'API FFTT 🏓",
     "license": "MIT",
     "bin": {
@@ -37,18 +37,19 @@
     },
     "scripts": {
         "build": "tsdown",
+        "changeset": "changeset",
         "check-exports": "attw --pack .",
+        "ci": "npm run build && npm run check-exports",
         "dev": "tsdown --watch",
         "fmt": "oxfmt",
         "fmt:check": "oxfmt --check",
         "lint": "oxlint",
         "lint:fix": "oxlint --fix",
+        "local-release": "changeset version && changeset publish",
+        "prepublishOnly": "npm run ci",
         "test": "vitest",
         "test:ci": "vitest --watch=false --coverage",
-        "test:coverage": "vitest --coverage",
-        "ci": "npm run build && npm run check-exports",
-        "local-release": "changeset version && changeset publish",
-        "prepublishOnly": "npm run ci"
+        "test:coverage": "vitest --coverage"
     },
     "dependencies": {
         "entities": "8.0.0",
