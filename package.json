@@ -42,7 +42,7 @@
     },
     "scripts": {
         "build": "tsdown",
-        "check-exports": "attw --pack .",
+        "check-exports": "attw --pack . --ignore-rules cjs-resolves-to-esm",
         "ci": "pnpm run build && pnpm run check-exports",
         "dev": "tsdown --watch",
         "fmt": "oxfmt",
