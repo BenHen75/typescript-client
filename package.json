@@ -43,13 +43,13 @@
     "scripts": {
         "build": "tsdown",
         "check-exports": "attw --pack .",
-        "ci": "npm run build && npm run check-exports",
+        "ci": "pnpm run build && pnpm run check-exports",
         "dev": "tsdown --watch",
         "fmt": "oxfmt",
         "fmt:check": "oxfmt --check",
         "lint": "oxlint",
         "lint:fix": "oxlint --fix",
-        "prepublishOnly": "npm run ci",
+        "prepublishOnly": "pnpm run ci",
         "test": "vitest",
         "test:ci": "vitest --watch=false --coverage",
         "test:coverage": "vitest --coverage"
