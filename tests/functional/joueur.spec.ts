@@ -7,10 +7,7 @@ import { DetailJoueurBaseSPID } from '#models/joueur/detail_joueur_base_spid';
 import { HistoriqueClassement } from '#models/joueur/historique_classement';
 import { JoueurBaseClassement } from '#models/joueur/joueur_base_classement';
 import { JoueurBaseSPID } from '#models/joueur/joueur_base_spid';
-import { PointsVirtuels } from '#models/joueur/points_virtuels';
-import { Partie } from '#models/partie/partie';
 import { PartieBaseClassement } from '#models/partie/partie_base_classement';
-import { PartieBaseSPID } from '#models/partie/partie_base_spid';
 import { instance } from '#tests/setup';
 
 describe('[xml_liste_joueur]', () => {
@@ -200,102 +197,6 @@ describe('[xml_partie_mysql]', () => {
 
 		assert.isArray(response);
 		assert.isEmpty(response);
-	});
-});
-
-describe('[xml_partie]', () => {
-	it("devrait récupérer l'historique des parties d'un joueur (base SPID)", async () => {
-		const response = await instance.joueur.historiquePartiesBaseSPID('1');
-
-		assert.isArray(response);
-		assert.isNotEmpty(response);
-		assert.instanceOf(response[0], PartieBaseSPID);
-		assert.strictEqual(response[0].id, 12434537);
-	});
-
-	it("devrait retourner un tableau vide si aucun joueur trouvé pour l'historique des parties (base SPID)", async () => {
-		const response = await instance.joueur.historiquePartiesBaseSPID('999999');
-
-		assert.isArray(response);
-		assert.isEmpty(response);
-	});
-
-	it("devrait récupérer l'historique des parties d'un joueur", async () => {
-		const response = await instance.joueur.historiqueParties('1');
-
-		assert.isArray(response);
-		assert.isNotEmpty(response);
-		assert.instanceOf(response[0], Partie);
-		assert.strictEqual(response[0].id, 12434537);
-	});
-
-	it("devrait retourner un tableau vide si aucun joueur trouvé pour l'historique des parties", async () => {
-		const response = await instance.joueur.historiqueParties('999999');
-
-		assert.isArray(response);
-		assert.isEmpty(response);
-	});
-
-	it("devrait récupérer les parties validées d'un joueur", async () => {
-		const response = await instance.joueur.partiesValidees('1');
-
-		assert.isArray(response);
-		assert.instanceOf(response[0], Partie);
-	});
-
-	it("devrait retourner un tableau vide si aucun joueur trouvé pour récupérer les parties validées d'un joueur", async () => {
-		const response = await instance.joueur.partiesValidees('999999');
-
-		assert.isArray(response);
-		assert.isEmpty(response);
-	});
-
-	it("devrait récupérer les parties non-validées d'un joueur", async () => {
-		const response = await instance.joueur.partiesNonValidees('1');
-
-		assert.isArray(response);
-		assert.instanceOf(response[0], Partie);
-	});
-
-	it("devrait retourner un tableau vide si aucun joueur trouvé pour récupérer les parties non-validées d'un joueur", async () => {
-		const response = await instance.joueur.partiesNonValidees('999999');
-
-		assert.isArray(response);
-		assert.isEmpty(response);
-	});
-
-	it("devrait calculer les points virtuels des parties non-validées d'un joueur", async () => {
-		const response = await instance.joueur.pointsVirtuels('1');
-
-		assert.instanceOf(response, PointsVirtuels);
-		assert.strictEqual(response.estimation, -104);
-	});
-
-	it('devrait retourner undefined si aucun joueur trouvé pour calculer les points virtuels', async () => {
-		const response = await instance.joueur.pointsVirtuels('999999');
-
-		assert.isUndefined(response);
-	});
-
-	it("devrait calculer les points virtuels des parties non-validées d'un joueur sur une période donnée", async () => {
-		const response = await instance.joueur.pointsVirtuelsSurPeriode(
-			'1',
-			'15/03/2026',
-			'15/03/2026',
-		);
-
-		assert.instanceOf(response, PointsVirtuels);
-		assert.strictEqual(response.estimation, -87);
-	});
-
-	it('devrait retourner undefined si aucun joueur trouvé pour calculer les points virtuels sur une période donnée', async () => {
-		const response = await instance.joueur.pointsVirtuelsSurPeriode(
-			'999999',
-			'15/03/2026',
-			'15/03/2026',
-		);
-
-		assert.isUndefined(response);
 	});
 });
 

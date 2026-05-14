@@ -1,5 +1,3 @@
-import { DateTime, Interval } from 'luxon';
-
 import type { JoueurContract } from '#contracts/joueur_contract';
 import type { RequestParams } from '#core/abstract_http_client';
 import type { HttpClientContract } from '#core/http_client_contract';
@@ -12,12 +10,7 @@ import { DetailJoueurBaseSPID } from '#models/joueur/detail_joueur_base_spid';
 import { HistoriqueClassement } from '#models/joueur/historique_classement';
 import { JoueurBaseClassement } from '#models/joueur/joueur_base_classement';
 import { JoueurBaseSPID } from '#models/joueur/joueur_base_spid';
-import { PointsVirtuels } from '#models/joueur/points_virtuels';
-import { Partie } from '#models/partie/partie';
-import { PartieBaseClassement } from '#models/partie/partie_base_classement';
 import { PartieBaseSPID } from '#models/partie/partie_base_spid';
-import { estimerPoints } from '#utils/estimation_point';
-import { DATE_FORMAT } from '#utils/value_transformer';
 
 export class JoueurService implements JoueurContract {
 	readonly #httpClient: HttpClientContract;
@@ -40,36 +33,6 @@ export class JoueurService implements JoueurContract {
 		}
 
 		return response.liste.histo.map((model) => new HistoriqueClassement(model));
-	}
-
-	async historiqueParties(licence: string) {
-		const [classement, spid] = await Promise.all([
-			this.historiquePartiesBaseClassement(licence),
-			this.historiquePartiesBaseSPID(licence),
-		]);
-
-		return spid.map((partieSpid) => {
-			const partieClassement = classement.find((p) => p.id === partieSpid.id);
-			return new Partie(partieSpid, partieClassement);
-		});
-	}
-
-	async historiquePartiesBaseClassement(licence: string) {
-		const params: RequestParams = {
-			licence,
-		};
-
-		const response = await this.#httpClient.fetch<{
-			liste: '' | { partie: Array<Record<string, unknown>> };
-		}>(ApiEndpoints.XML_PARTIE_MYSQL, params);
-
-		if (!response.liste) {
-			return [];
-		}
-
-		return response.liste.partie.map(
-			(model) => new PartieBaseClassement(model),
-		);
 	}
 
 	async historiquePartiesBaseSPID(licence: string) {
@@ -254,108 +217,5 @@ export class JoueurService implements JoueurContract {
 		}
 
 		return response.liste.joueur.map((model) => new JoueurBaseSPID(model));
-	}
-
-	async partiesNonValidees(licence: string) {
-		const parties = await this.historiqueParties(licence);
-
-		return parties.filter((partie) => !partie.valide);
-	}
-
-	async partiesValidees(licence: string) {
-		const parties = await this.historiqueParties(licence);
-
-		return parties.filter((partie) => partie.valide);
-	}
-
-	async pointsVirtuels(licence: string) {
-		const joueur = await this.joueurParLicence(licence);
-
-		if (!joueur) {
-			return;
-		}
-
-		const parties = await this.partiesNonValidees(licence);
-		const pointsVirtuels = new PointsVirtuels();
-
-		for (const partie of parties) {
-			if (partie.forfait) {
-				pointsVirtuels.forfait();
-				continue;
-			}
-
-			const estimation = estimerPoints(
-				joueur.pointsOfficiels,
-				partie.pointsAdversaire,
-				partie.victoire,
-				partie.coefficient,
-			);
-
-			if (partie.victoire) {
-				pointsVirtuels.victoire(
-					estimation,
-					joueur.pointsOfficiels < partie.pointsAdversaire,
-				);
-			} else {
-				pointsVirtuels.defaite(
-					estimation,
-					joueur.pointsOfficiels > partie.pointsAdversaire,
-				);
-			}
-		}
-
-		return pointsVirtuels;
-	}
-
-	async pointsVirtuelsSurPeriode(licence: string, debut: string, fin: string) {
-		const joueur = await this.joueurParLicence(licence);
-
-		if (!joueur) {
-			return;
-		}
-
-		const parties = await this.partiesNonValidees(licence);
-		const dateIntervalle = Interval.fromDateTimes(
-			DateTime.fromFormat(debut, DATE_FORMAT.DEFAULT, {
-				locale: 'fr-FR',
-				zone: 'Europe/Paris',
-			}),
-			DateTime.fromFormat(fin, DATE_FORMAT.DEFAULT, {
-				locale: 'fr-FR',
-				zone: 'Europe/Paris',
-			}).endOf('day'),
-		);
-
-		const pointsVirtuels = new PointsVirtuels();
-
-		for (const partie of parties) {
-			if (dateIntervalle.contains(partie.date)) {
-				if (partie.forfait) {
-					pointsVirtuels.forfait();
-					continue;
-				}
-
-				const estimation = estimerPoints(
-					joueur.pointsOfficiels,
-					partie.pointsAdversaire,
-					partie.victoire,
-					partie.coefficient,
-				);
-
-				if (partie.victoire) {
-					pointsVirtuels.victoire(
-						estimation,
-						joueur.pointsOfficiels < partie.pointsAdversaire,
-					);
-				} else {
-					pointsVirtuels.defaite(
-						estimation,
-						joueur.pointsOfficiels > partie.pointsAdversaire,
-					);
-				}
-			}
-		}
-
-		return pointsVirtuels;
 	}
 }

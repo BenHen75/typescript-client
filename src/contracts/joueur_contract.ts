@@ -5,9 +5,6 @@ import type { DetailJoueurBaseSPID } from '#models/joueur/detail_joueur_base_spi
 import type { HistoriqueClassement } from '#models/joueur/historique_classement';
 import type { JoueurBaseClassement } from '#models/joueur/joueur_base_classement';
 import type { JoueurBaseSPID } from '#models/joueur/joueur_base_spid';
-import type { PointsVirtuels } from '#models/joueur/points_virtuels';
-import type { Partie } from '#models/partie/partie';
-import type { PartieBaseClassement } from '#models/partie/partie_base_classement';
 import type { PartieBaseSPID } from '#models/partie/partie_base_spid';
 
 export interface JoueurContract {
@@ -132,17 +129,6 @@ export interface JoueurContract {
 	joueurParLicence(licence: string): Promise<DetailJoueur | undefined>;
 
 	/**
-	 * Endpoint : xml_partie_mysql.php
-	 * ---------------------------------------------------------
-	 * Renvoie la liste des parties de la base classement d’un joueur.
-	 *
-	 * @param licence
-	 */
-	historiquePartiesBaseClassement(
-		licence: string,
-	): Promise<Array<PartieBaseClassement>>;
-
-	/**
 	 * Endpoint : xml_partie.php
 	 * ---------------------------------------------------------
 	 * Renvoie la liste des parties de la base SPID d’un joueur.
@@ -150,15 +136,6 @@ export interface JoueurContract {
 	 * @param licence
 	 */
 	historiquePartiesBaseSPID(licence: string): Promise<Array<PartieBaseSPID>>;
-
-	/**
-	 * Endpoint : xml_partie.php
-	 * ---------------------------------------------------------
-	 * Renvoie une liste des parties d’un joueur.
-	 *
-	 * @param licence
-	 */
-	historiqueParties(licence: string): Promise<Array<Partie>>;
 
 	/**
 	 * Endpoint : xml_histo_classement.php
@@ -170,38 +147,4 @@ export interface JoueurContract {
 	historiqueClassementOfficiel(
 		licence: string,
 	): Promise<Array<HistoriqueClassement>>;
-
-	/**
-	 * Renvoie une liste des parties validées d’un joueur.
-	 *
-	 * @param licence
-	 */
-	partiesValidees(licence: string): Promise<Array<Partie>>;
-
-	/**
-	 * Renvoie une liste des parties non-validées d’un joueur.
-	 *
-	 * @param licence
-	 */
-	partiesNonValidees(licence: string): Promise<Array<Partie>>;
-
-	/**
-	 * Renvoie le nombre de points virtuels d’un joueur (estimation).
-	 *
-	 * @param licence
-	 */
-	pointsVirtuels(licence: string): Promise<PointsVirtuels | undefined>;
-
-	/**
-	 * Renvoie le nombre de points virtuels d’un joueur (estimation) sur une période donnée.
-	 *
-	 * @param licence
-	 * @param debut - Date de début de la période (jj/mm/aaaa)
-	 * @param fin - Date de fin de la période (jj/mm/aaaa)
-	 */
-	pointsVirtuelsSurPeriode(
-		licence: string,
-		debut: string,
-		fin: string,
-	): Promise<PointsVirtuels | undefined>;
 }

@@ -88,10 +88,16 @@ L'API de la FFTT est soumise à des conditions d'utilisation et de confidentiali
 - `joueurParLicenceSurBaseClassement` : récupère le joueur par licence sur la base classement.
 - `joueurParLicenceSurBaseSPID` : récupère le joueur par licence sur la base SPID.
 - `joueurParLicence` : récupère le joueur par licence.
-- `historiquePartiesBaseClassement` : récupère l'historique des parties pour un joueur sur la base classement.
 - `historiquePartiesBaseSPID` : récupère l'historique des parties pour un joueur sur la base SPID.
-- `historiqueParties` : récupère l'historique des parties pour un joueur.
 - `historiqueClassementOfficiel` : récupère l'historique du classement officiel pour un joueur.
+
+#### Méthodes supprimées (depuis 1.1.0)
+
+Les méthodes suivantes ont été supprimées depuis la version 1.1.0 suite à la suppression des endpoints 
+correspondants sur l'API de la Fédération :
+
+- `historiquePartiesBaseClassement` : récupère l'historique des parties pour un joueur sur la base classement.
+- `historiqueParties` : récupère l'historique des parties pour un joueur.
 - `partiesValidees` : récupère les parties validées pour un joueur.
 - `partiesNonValidees` : récupère les parties non validées pour un joueur.
 - `pointsVirtuels` : récupère les points virtuels pour un joueur.
