@@ -6,6 +6,7 @@ export const CertificationMedicale = {
 	SANS_PRATIQUE_SPORTIVE: 'N',
 	STANDARD: 'C',
 	QUADRUPLE: 'Q',
+	PARCOURS_PREVENTION_SANTE: 'P',
 	AUTRE: '',
 } as const;
 
@@ -18,5 +19,6 @@ export const CertificationMedicaleDict = {
 	SANS_PRATIQUE_SPORTIVE: 'Sans pratique sportive',
 	STANDARD: 'Standard',
 	QUADRUPLE: 'Quadruple',
+	PARCOURS_PREVENTION_SANTE: 'Parcours Prévention Santé (PPS)',
 	AUTRE: 'Autre',
 } satisfies Record<EnumKey<typeof CertificationMedicale>, string>;
