@@ -4,13 +4,16 @@ import type { HttpClientContract } from '#core/http_client_contract';
 
 import { ApiEndpoints } from '#enums/api_endpoints';
 import { TypeLicence } from '#enums/type_licence';
+import { FfttError } from '#errors/fftt_error';
 import { DetailJoueur } from '#models/joueur/detail_joueur';
 import { DetailJoueurBaseClassement } from '#models/joueur/detail_joueur_base_classement';
 import { DetailJoueurBaseSPID } from '#models/joueur/detail_joueur_base_spid';
 import { HistoriqueClassement } from '#models/joueur/historique_classement';
 import { JoueurBaseClassement } from '#models/joueur/joueur_base_classement';
 import { JoueurBaseSPID } from '#models/joueur/joueur_base_spid';
+import { PartieBaseClassement } from '#models/partie/partie_base_classement';
 import { PartieBaseSPID } from '#models/partie/partie_base_spid';
+import { sourceCollection, sourceRecord } from '#utils/source_collection';
 
 export class JoueurService implements JoueurContract {
 	readonly #httpClient: HttpClientContract;
@@ -21,18 +24,16 @@ export class JoueurService implements JoueurContract {
 
 	async historiqueClassementOfficiel(licence: string) {
 		const params: RequestParams = {
-			licence,
+			numlic: licence,
 		};
 
 		const response = await this.#httpClient.fetch<{
 			liste: '' | { histo: Array<Record<string, unknown>> };
 		}>(ApiEndpoints.XML_HISTO_CLASSEMENT, params);
 
-		if (!response.liste) {
-			return [];
-		}
-
-		return response.liste.histo.map((model) => new HistoriqueClassement(model));
+		return sourceCollection(response, 'histo').map(
+			(model) => new HistoriqueClassement(model),
+		);
 	}
 
 	async historiquePartiesBaseSPID(licence: string) {
@@ -44,11 +45,9 @@ export class JoueurService implements JoueurContract {
 			liste: '' | { partie: Array<Record<string, unknown>> };
 		}>(ApiEndpoints.XML_PARTIE, params);
 
-		if (!response.liste) {
-			return [];
-		}
-
-		return response.liste.partie.map((model) => new PartieBaseSPID(model));
+		return sourceCollection(response, 'partie').map(
+			(model) => new PartieBaseSPID(model),
+		);
 	}
 
 	async joueurParLicence(licence: string) {
@@ -60,11 +59,8 @@ export class JoueurService implements JoueurContract {
 			liste: '' | { licence: Record<string, unknown> };
 		}>(ApiEndpoints.XML_LICENCE_B, params);
 
-		if (!response.liste) {
-			return;
-		}
-
-		return new DetailJoueur(response.liste.licence);
+		const model = sourceRecord(response, 'licence');
+		return model ? new DetailJoueur(model) : undefined;
 	}
 
 	async joueurParLicenceSurBaseClassement(licence: string) {
@@ -76,11 +72,8 @@ export class JoueurService implements JoueurContract {
 			liste: '' | { joueur: Record<string, unknown> };
 		}>(ApiEndpoints.XML_JOUEUR, params);
 
-		if (!response.liste) {
-			return;
-		}
-
-		return new DetailJoueurBaseClassement(response.liste.joueur);
+		const model = sourceRecord(response, 'joueur');
+		return model ? new DetailJoueurBaseClassement(model) : undefined;
 	}
 
 	async joueurParLicenceSurBaseSPID(licence: string) {
@@ -92,11 +85,8 @@ export class JoueurService implements JoueurContract {
 			liste: '' | { licence: Record<string, unknown> };
 		}>(ApiEndpoints.XML_LICENCE, params);
 
-		if (!response.liste) {
-			return;
-		}
-
-		return new DetailJoueurBaseSPID(response.liste.licence);
+		const model = sourceRecord(response, 'licence');
+		return model ? new DetailJoueurBaseSPID(model) : undefined;
 	}
 
 	async joueursParClub(numeroClub: string) {
@@ -108,11 +98,9 @@ export class JoueurService implements JoueurContract {
 			liste: '' | { licence: Array<Record<string, unknown>> };
 		}>(ApiEndpoints.XML_LICENCE_B, params);
 
-		if (!response.liste) {
-			return [];
-		}
-
-		return response.liste.licence.map((model) => new DetailJoueur(model));
+		return sourceCollection(response, 'licence').map(
+			(model) => new DetailJoueur(model),
+		);
 	}
 
 	async joueursParClubEtType(
@@ -136,11 +124,7 @@ export class JoueurService implements JoueurContract {
 			liste: '' | { joueur: Array<Record<string, unknown>> };
 		}>(ApiEndpoints.XML_LISTE_JOUEUR, params);
 
-		if (!response.liste) {
-			return [];
-		}
-
-		return response.liste.joueur.map(
+		return sourceCollection(response, 'joueur').map(
 			(model) => new JoueurBaseClassement(model),
 		);
 	}
@@ -158,11 +142,9 @@ export class JoueurService implements JoueurContract {
 			liste: '' | { joueur: Array<Record<string, unknown>> };
 		}>(ApiEndpoints.XML_LISTE_JOUEUR_O, params);
 
-		if (!response.liste) {
-			return [];
-		}
-
-		return response.liste.joueur.map((model) => new JoueurBaseSPID(model));
+		return sourceCollection(response, 'joueur').map(
+			(model) => new JoueurBaseSPID(model),
+		);
 	}
 
 	joueursParNom(nom: string, prenom?: string, valide?: boolean) {
@@ -182,11 +164,7 @@ export class JoueurService implements JoueurContract {
 			liste: '' | { joueur: Array<Record<string, unknown>> };
 		}>(ApiEndpoints.XML_LISTE_JOUEUR, params);
 
-		if (!response.liste) {
-			return [];
-		}
-
-		return response.liste.joueur.map(
+		return sourceCollection(response, 'joueur').map(
 			(model) => new JoueurBaseClassement(model),
 		);
 	}
@@ -212,10 +190,22 @@ export class JoueurService implements JoueurContract {
 			liste: '' | { joueur: Array<Record<string, unknown>> };
 		}>(ApiEndpoints.XML_LISTE_JOUEUR_O, params);
 
-		if (!response.liste) {
-			return [];
-		}
-
-		return response.liste.joueur.map((model) => new JoueurBaseSPID(model));
+		return sourceCollection(response, 'joueur').map(
+			(model) => new JoueurBaseSPID(model),
+		);
+	}
+	/** Retired upstream endpoint. Callers must explicitly opt in and handle unsupported access. */
+	async historiquePartiesBaseClassementLegacy(
+		licence: string,
+		options?: { enabled: boolean },
+	) {
+		if (!options?.enabled) throw new FfttError('FFTT_LEGACY_ENDPOINT_DISABLED');
+		const response = await this.#httpClient.fetch<Record<string, unknown>>(
+			ApiEndpoints.XML_PARTIE_MYSQL,
+			{ licence },
+		);
+		return sourceCollection(response, 'partie').map(
+			(model) => new PartieBaseClassement(model),
+		);
 	}
 }

@@ -9,7 +9,7 @@ export class Poule extends BaseModel {
 	readonly #idDivision: number;
 
 	constructor(data: Record<string, unknown>) {
-		super();
+		super(data);
 
 		this.#libelle = vt.string(data['libelle']);
 

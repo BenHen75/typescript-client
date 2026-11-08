@@ -3,9 +3,11 @@ import type { RequestParams } from '#core/abstract_http_client';
 import type { HttpClientContract } from '#core/http_client_contract';
 
 import { ApiEndpoints } from '#enums/api_endpoints';
+import { FfttError } from '#errors/fftt_error';
 import { Classement } from '#models/epreuve/individuelle/classement';
 import { Groupe } from '#models/epreuve/individuelle/groupe';
 import { Partie } from '#models/epreuve/individuelle/partie';
+import { sourceCollection } from '#utils/source_collection';
 
 export class EpreuveIndividuelleService implements EpreuveIndividuelleContract {
 	readonly #httpClient: HttpClientContract;
@@ -23,11 +25,13 @@ export class EpreuveIndividuelleService implements EpreuveIndividuelleContract {
 			res_division: divisionId,
 		});
 
-		if (response.liste === '') {
-			return [];
-		}
-
-		return response.liste.tour.map((model) => new Groupe(model));
+		return sourceCollection(response, 'tour').map((model) => {
+			const group = new Groupe(model);
+			if (group.idEpreuve !== epreuveId || group.idDivision !== divisionId) {
+				throw new FfttError('FFTT_INDIVIDUAL_CONTEXT_MISMATCH');
+			}
+			return group;
+		});
 	}
 
 	async recupererClassement(
@@ -49,11 +53,9 @@ export class EpreuveIndividuelleService implements EpreuveIndividuelleContract {
 			liste: '' | { classement: Array<Record<string, unknown>> };
 		}>(ApiEndpoints.XML_RESULT_INDIV, params);
 
-		if (response.liste === '') {
-			return [];
-		}
-
-		return response.liste.classement.map((model) => new Classement(model));
+		return sourceCollection(response, 'classement').map(
+			(model) => new Classement(model),
+		);
 	}
 
 	async recupererClassementCriterium(divisionId: number) {
@@ -63,11 +65,9 @@ export class EpreuveIndividuelleService implements EpreuveIndividuelleContract {
 			res_division: divisionId,
 		});
 
-		if (response.liste === '') {
-			return [];
-		}
-
-		return response.liste.classement.map((model) => new Classement(model));
+		return sourceCollection(response, 'classement').map(
+			(model) => new Classement(model),
+		);
 	}
 
 	async recupererParties(
@@ -89,10 +89,8 @@ export class EpreuveIndividuelleService implements EpreuveIndividuelleContract {
 			liste: '' | { partie: Array<Record<string, unknown>> };
 		}>(ApiEndpoints.XML_RESULT_INDIV, params);
 
-		if (response.liste === '') {
-			return [];
-		}
-
-		return response.liste.partie.map((model) => new Partie(model));
+		return sourceCollection(response, 'partie').map(
+			(model) => new Partie(model),
+		);
 	}
 }

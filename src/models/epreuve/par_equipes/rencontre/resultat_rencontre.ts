@@ -1,4 +1,5 @@
 import { BaseModel } from '#models/base_model';
+import { parseFfttMatchScore } from '#utils/match_source';
 import * as vt from '#utils/value_transformer';
 
 export class ResultatRencontre extends BaseModel {
@@ -6,17 +7,17 @@ export class ResultatRencontre extends BaseModel {
 
 	readonly #equipeB: string | undefined;
 
-	readonly #scoreA: number | undefined;
+	readonly #scoreA: number | null | undefined;
 
-	readonly #scoreB: number | undefined;
+	readonly #scoreB: number | null | undefined;
 
 	constructor(data: Record<string, unknown>) {
-		super();
+		super(data);
 
 		this.#equipeA = vt.stringIfDefined(data['equa']);
 		this.#equipeB = vt.stringIfDefined(data['equb']);
-		this.#scoreA = vt.numberIfDefined(data['resa']);
-		this.#scoreB = vt.numberIfDefined(data['resb']);
+		this.#scoreA = parseFfttMatchScore(data['resa']);
+		this.#scoreB = parseFfttMatchScore(data['resb']);
 	}
 
 	get equipeA() {

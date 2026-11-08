@@ -1,7 +1,14 @@
-import type { DateTime } from 'luxon';
+import { DateTime } from 'luxon';
 
 import { Sexe, SexeDict } from '#enums/sexe';
 import { BaseModel } from '#models/base_model';
+import {
+	sourceIdentifier,
+	sourceVictory,
+	sourceForfeit,
+	sourceOpponentPoints,
+	type DonneesPartieOfficielle,
+} from '#models/partie/official_fields';
 import { enumLabel } from '#utils/enum_utils';
 import { separerNomPrenom } from '#utils/joueur_utils';
 import * as vt from '#utils/value_transformer';
@@ -20,7 +27,7 @@ export class PartieBaseClassement extends BaseModel {
 
 	readonly #date: DateTime;
 
-	readonly #sexeAdversaire: Sexe;
+	readonly #sexeAdversaire: Sexe | undefined;
 
 	readonly #nomAdversaire: string;
 
@@ -41,7 +48,7 @@ export class PartieBaseClassement extends BaseModel {
 	readonly #valide: boolean;
 
 	constructor(data: Record<string, unknown>) {
-		super();
+		super(data);
 
 		this.#valide = true;
 		this.#licence = vt.string(data['licence']);
@@ -49,8 +56,10 @@ export class PartieBaseClassement extends BaseModel {
 		this.#victoire = vt.string(data['vd']) === 'V';
 		this.#numeroJournee = vt.numberIfDefined(data['numjourn']);
 		this.#codeChampionnat = vt.string(data['codechamp']);
-		this.#date = vt.date(data['date'], DATE_FORMAT.DEFAULT);
-		this.#sexeAdversaire = vt.picklist(data['advsexe'], Sexe);
+		this.#date =
+			vt.dateIfDefined(data['date'], DATE_FORMAT.DEFAULT) ??
+			DateTime.invalid('Missing date');
+		this.#sexeAdversaire = vt.picklistIfDefined(data['advsexe'], Sexe);
 		[this.#nomAdversaire, this.#prenomAdversaire] = separerNomPrenom(
 			vt.string(data['advnompre']),
 		);
@@ -95,7 +104,10 @@ export class PartieBaseClassement extends BaseModel {
 	get sexeAdversaire() {
 		return {
 			code: this.#sexeAdversaire,
-			label: enumLabel(Sexe, SexeDict, this.#sexeAdversaire),
+			label:
+				this.#sexeAdversaire === undefined
+					? undefined
+					: enumLabel(Sexe, SexeDict, this.#sexeAdversaire),
 		};
 	}
 
@@ -133,5 +145,26 @@ export class PartieBaseClassement extends BaseModel {
 
 	get valide() {
 		return this.#valide;
+	}
+	/** Strict source projection is lazy so callers can isolate an invalid observation. */
+	get donneesOfficielles(): DonneesPartieOfficielle {
+		const coefficient = this.sourceNumber('coefchamp', 3);
+		const journee = this.sourceNumber('numjourn', 3);
+		return {
+			idPartie: sourceIdentifier(this.sourceText('idpartie')),
+			date: this.sourceDate('date') ?? null,
+			licence: this.sourceText('licence') ?? null,
+			licenceAdversaire: sourceIdentifier(this.sourceText('advlic')),
+			nomAdversaire:
+				this.sourceText('advnompre')?.replaceAll(/\s+/g, ' ') ?? null,
+			pointsAdversaire: sourceOpponentPoints(this.sourceText('advclaof')),
+			codeChampionnat: this.sourceText('codechamp') ?? null,
+			epreuve: null,
+			numeroJournee: journee === 0 ? null : (journee ?? null),
+			coefficient: coefficient === 0 ? null : (coefficient ?? null),
+			pointsObtenus: this.sourceNumber('pointres', 3) ?? null,
+			victoire: sourceVictory(this.sourceText('vd')),
+			forfait: sourceForfeit(this.sourceText('forfait')),
+		};
 	}
 }

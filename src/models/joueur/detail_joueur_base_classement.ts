@@ -36,7 +36,7 @@ export class DetailJoueurBaseClassement extends BaseModel {
 
 	readonly #classementNational: number;
 
-	readonly #categorieAdministrative: CategorieLicenceAdministrative;
+	readonly #categorieAdministrative: CategorieLicenceAdministrative | undefined;
 
 	readonly #rangRegional: number;
 
@@ -49,7 +49,7 @@ export class DetailJoueurBaseClassement extends BaseModel {
 	readonly #valeurDebutSaison: number;
 
 	constructor(data: Record<string, unknown>) {
-		super();
+		super(data);
 
 		this.#licence = vt.string(data['licence']);
 		this.#nom = vt.string(data['nom']);
@@ -73,7 +73,7 @@ export class DetailJoueurBaseClassement extends BaseModel {
 		}
 
 		this.#classementNational = vt.number(data['clnat']);
-		this.#categorieAdministrative = vt.picklist(
+		this.#categorieAdministrative = vt.picklistIfDefined(
 			data['categ'],
 			CategorieLicenceAdministrative,
 		);
@@ -146,11 +146,14 @@ export class DetailJoueurBaseClassement extends BaseModel {
 	get categorieAdministrative() {
 		return {
 			code: this.#categorieAdministrative,
-			label: enumLabel(
-				CategorieLicenceAdministrative,
-				CategorieLicenceAdministrativeDict,
-				this.#categorieAdministrative,
-			),
+			label:
+				this.#categorieAdministrative === undefined
+					? undefined
+					: enumLabel(
+							CategorieLicenceAdministrative,
+							CategorieLicenceAdministrativeDict,
+							this.#categorieAdministrative,
+						),
 		};
 	}
 

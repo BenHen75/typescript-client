@@ -17,7 +17,7 @@ export class DetailRencontre extends BaseModel {
 	readonly #parties: Array<PartieRencontre>;
 
 	constructor(data: ConstructorProps) {
-		super();
+		super(data as unknown as Record<string, unknown>);
 
 		this.#resultat = new ResultatRencontre(data.resultat);
 		this.#joueurs = data.joueur.map((joueur) => new JoueurRencontre(joueur));

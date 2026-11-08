@@ -22,7 +22,7 @@ export class DetailClub extends BaseModel {
 	readonly #dateValidation: DateTime | undefined;
 
 	constructor(data: Record<string, unknown>) {
-		super();
+		super(data);
 
 		this.#id = vt.string(data['idclub']);
 		this.#numero = vt.string(data['numero']);
@@ -66,6 +66,30 @@ export class DetailClub extends BaseModel {
 
 	get siteInternet() {
 		return this.#siteInternet;
+	}
+
+	/** Preserve omission versus an explicitly empty source field. */
+	get siteInternetSource() {
+		return this.sourceText('web');
+	}
+
+	get dateValidationIso() {
+		return this.sourceDate('validation');
+	}
+
+	get salleSource() {
+		const nom = this.sourceText('nomsalle');
+		if (!nom) return;
+		return {
+			nom,
+			ligneAdresse1: this.sourceText('adressesalle1'),
+			ligneAdresse2: this.sourceText('adressesalle2'),
+			ligneAdresse3: this.sourceText('adressesalle3'),
+			codePostal: this.sourceText('codepsalle'),
+			ville: this.sourceText('villesalle'),
+			latitude: this.sourceNumber('latitude'),
+			longitude: this.sourceNumber('longitude'),
+		};
 	}
 
 	get salle() {

@@ -1,5 +1,5 @@
 import { BaseModel } from '#models/base_model';
-import { detaillerScores } from '#utils/score_utils';
+import { parseFfttMatchScore, parseFfttSets } from '#utils/match_source';
 import * as vt from '#utils/value_transformer';
 
 export class PartieRencontre extends BaseModel {
@@ -7,27 +7,28 @@ export class PartieRencontre extends BaseModel {
 
 	readonly #joueurB: string | undefined;
 
-	readonly #scoreA: number | undefined;
+	readonly #scoreA: number | null | undefined;
 
-	readonly #scoreB: number | undefined;
+	readonly #scoreB: number | null | undefined;
 
 	readonly #detailManches: Array<number>;
 
 	readonly #detailManchesComplet: Array<[number, number]>;
 
 	constructor(data: Record<string, unknown>) {
-		super();
+		super(data);
 
 		this.#joueurA = vt.stringIfDefined(data['ja']);
 		this.#joueurB = vt.stringIfDefined(data['jb']);
 		this.#scoreA =
-			vt.string(data['scorea']) === '-' ? 0 : Number(data['scorea']);
+			data['scorea'] === '-' ? 0 : parseFfttMatchScore(data['scorea']);
 		this.#scoreB =
-			vt.string(data['scoreb']) === '-' ? 0 : Number(data['scoreb']);
+			data['scoreb'] === '-' ? 0 : parseFfttMatchScore(data['scoreb']);
 
-		const detail = vt.string(data['detail']);
-		this.#detailManches = detail === '-' ? [] : detail.split(' ').map(Number);
-		this.#detailManchesComplet = detaillerScores(this.#detailManches);
+		const detail = this.sourceText('detail') ?? '';
+		this.#detailManchesComplet = parseFfttSets(detail);
+		this.#detailManches =
+			!detail || detail === '-' ? [] : detail.split(/\s+/).map(Number);
 	}
 
 	get joueurA() {

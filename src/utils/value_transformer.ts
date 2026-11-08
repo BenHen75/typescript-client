@@ -17,36 +17,21 @@ export function string(value: unknown): string {
 }
 
 export function number(value: unknown): number {
-	const result = v.safeParse(
-		v.pipe(v.string(), v.nonEmpty(), v.toNumber()),
-		value,
-	);
-
-	return result.success ? result.output : Number.NaN;
+	if (typeof value === 'number')
+		return Number.isFinite(value) ? value : Number.NaN;
+	if (typeof value !== 'string' || !/^[+-]?\d+(?:[.,]\d*)?$/.test(value.trim()))
+		return Number.NaN;
+	return Number(value.trim().replace(',', '.'));
 }
 
 export function numberIfDefined(
 	value: unknown,
 	zeroIncluded = true,
 ): number | undefined {
-	const result = v.safeParse(
-		v.nullish(v.pipe(v.string(), v.nonEmpty(), v.toNumber())),
-		value,
-	);
-
-	if (!result.success) {
-		return undefined;
-	}
-
-	if (!result.output) {
-		return undefined;
-	}
-
-	if (!zeroIncluded && result.output === 0) {
-		return undefined;
-	}
-
-	return result.output;
+	const result = number(value);
+	return Number.isFinite(result) && (zeroIncluded || result !== 0)
+		? result
+		: undefined;
 }
 
 export function stringIfDefined(value: unknown): string | undefined {

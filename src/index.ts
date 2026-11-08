@@ -1,6 +1,6 @@
 import type { HttpClientContract } from '#core/http_client_contract';
 
-import { HttpClient } from '#core/http_client';
+import { HttpClient, type HttpClientOptions } from '#core/http_client';
 import { ActualitesService } from '#services/actualites_service';
 import { AuthentificationService } from '#services/authentification_service';
 import { ClubService } from '#services/club_service';
@@ -56,12 +56,24 @@ export class FFTTApi {
 		appId: string,
 		appKey: string,
 		serial: string,
-		httpClient?: HttpClientConstructor,
+		httpClient?: HttpClientConstructor | HttpClientOptions,
 	) {
-		const client = httpClient
-			? new httpClient(appId, appKey, serial)
-			: new HttpClient(appId, appKey, serial);
+		const client =
+			typeof httpClient === 'function'
+				? new httpClient(appId, appKey, serial)
+				: new HttpClient(appId, appKey, serial, httpClient);
 
 		return new this(client);
 	}
 }
+
+export { FfttError } from '#errors/fftt_error';
+export { HttpClient } from '#core/http_client';
+export type { HttpClientOptions } from '#core/http_client';
+export { parseFfttXml, requestFftt, signedUrl } from '#core/transport';
+export type { Credentials } from '#core/transport';
+export {
+	parseFfttDate,
+	parseSheetClassification,
+	parseFfttSets,
+} from '#utils/match_source';

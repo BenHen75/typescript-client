@@ -33,10 +33,10 @@ export class EquipePoule extends BaseModel {
 	readonly #positionDepart: number | undefined;
 
 	constructor(data: Record<string, unknown>) {
-		super();
+		super(data);
 
 		this.#poule = vt.number(data['poule']);
-		this.#classement = vt.number(data['classement']);
+		this.#classement = vt.number(data['clt'] ?? data['classement']);
 		this.#equipe = vt.string(data['equipe']);
 		this.#rencontresJouees = vt.number(data['joue']);
 		this.#pointsRencontre = vt.number(data['pts']);

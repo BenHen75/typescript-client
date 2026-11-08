@@ -1,7 +1,3 @@
-import sha1 from 'jssha/sha1';
-import { DateTime } from 'luxon';
-import md5 from 'md5';
-
 import type { HttpClientContract } from '#core/http_client_contract';
 import type { ApiEndpoint } from '#enums/api_endpoints';
 
@@ -9,85 +5,119 @@ import {
 	AbstractHttpClient,
 	type RequestParams,
 } from '#core/abstract_http_client';
-import { HttpError } from '#errors/http_error';
+import { signedUrl, requestFftt, type TransportOptions } from '#core/transport';
+import { FfttError } from '#errors/fftt_error';
+import { sourceCollection, sourceRecord } from '#utils/source_collection';
+
+const collectionByEndpoint: Partial<Record<ApiEndpoint, string>> = {
+	'/xml_equipe.php': 'equipe',
+	'/xml_epreuve.php': 'epreuve',
+	'/xml_division.php': 'division',
+	'/xml_liste_joueur_o.php': 'joueur',
+	'/xml_liste_joueur.php': 'joueur',
+	'/xml_histo_classement.php': 'histo',
+	'/xml_partie.php': 'partie',
+	'/xml_partie_mysql.php': 'partie',
+	'/xml_res_cla.php': 'classement',
+	'/xml_new_actu.php': 'news',
+	'/xml_club_dep2.php': 'club',
+	'/xml_club_b.php': 'club',
+};
+
+export interface HttpClientOptions extends TransportOptions {
+	/** Runs before every actual request, for external quotas or scheduling. */
+	beforeRequest?: () => Promise<void>;
+	fetcher?: typeof fetch;
+	/** Abort the remaining requests of a short-lived sync session after failure. */
+	stopAfterFailure?: boolean;
+}
 
 export class HttpClient
 	extends AbstractHttpClient
 	implements HttpClientContract
 {
-	constructor(appId: string, appKey: string, serial: string) {
-		super();
+	readonly #options: HttpClientOptions;
+	#tail: Promise<unknown> = Promise.resolve();
+	#failure: Error | undefined;
 
+	constructor(
+		appId: string,
+		appKey: string,
+		serial: string,
+		options: HttpClientOptions = {},
+	) {
+		super();
 		this.appId = appId;
 		this.appKey = appKey;
 		this.serial = serial;
-		this.time = DateTime.now().toFormat('yyyyLLddHHmmss');
-
-		const sha = new sha1('SHA-1', 'TEXT', {
-			hmacKey: {
-				value: md5(this.appKey),
-				format: 'TEXT',
-				// oxlint-disable-next-line unicorn/text-encoding-identifier-case
-				encoding: 'UTF8',
-			},
-			// oxlint-disable-next-line unicorn/text-encoding-identifier-case
-			encoding: 'UTF8',
-		});
-
-		sha.update(this.time);
-
-		this.tmc = sha.getHMAC('HEX');
+		this.#options = options;
 	}
 
-	// oxlint-disable-next-line typescript/no-explicit-any
-	async fetch<Shape extends Record<string, any>>(
+	fetch<Shape extends Record<string, unknown>>(
 		endpoint: ApiEndpoint,
-		requestParams?: RequestParams,
-	) {
-		const { response, httpCode } = await this.#executeCall(
-			endpoint,
-			requestParams,
+		params: RequestParams = {},
+	): Promise<Shape> {
+		const task = this.#tail.then(async () => {
+			if (this.#failure) throw this.#failure;
+			try {
+				await this.#options.beforeRequest?.();
+				const response = await requestFftt(
+					signedUrl(endpoint, params, {
+						appId: this.appId,
+						appKey: this.appKey,
+						serial: this.serial,
+					}),
+					this.#options.fetcher,
+					this.#options,
+				);
+				return this.#normalize(endpoint, params, response) as Shape;
+			} catch (error) {
+				const failure =
+					error instanceof Error ? error : new FfttError('FFTT_NETWORK_ERROR');
+				if (this.#options.stopAfterFailure) this.#failure = failure;
+				throw failure;
+			}
+		});
+		this.#tail = task.then(
+			() => null,
+			() => null,
 		);
-
-		const sanitized = this.sanitizeResponse(response);
-
-		const payload = this.convertXmlToObject<Shape>(sanitized);
-
-		if (httpCode !== 200) {
-			throw new HttpError(payload['erreur'] as string);
-		}
-
-		return payload;
+		return task;
 	}
 
-	async #executeCall(endpoint: ApiEndpoint, requestParams?: RequestParams) {
-		const requestParameters = new URLSearchParams({
-			serie: this.serial,
-			id: this.appId,
-			tm: this.time,
-			tmc: this.tmc,
-		});
-
-		if (requestParams) {
-			for (const [key, value] of Object.entries(requestParams)) {
-				requestParameters.append(key, String(value));
-			}
+	#normalize(
+		endpoint: ApiEndpoint,
+		params: RequestParams,
+		response: Record<string, unknown>,
+	): Record<string, unknown> {
+		let collection = collectionByEndpoint[endpoint];
+		if (endpoint === '/xml_licence_b.php' && params['club'])
+			collection = 'licence';
+		if (endpoint === '/xml_result_indiv.php') {
+			collection =
+				params['action'] === 'poule'
+					? 'tour'
+					: params['action'] === 'partie'
+						? 'partie'
+						: 'classement';
 		}
-
-		const url = new URL(this.baseUrl + endpoint);
-		url.search = requestParameters.toString();
-
-		const response = await fetch(url, {
-			method: 'GET',
-			headers: {
-				'Content-Type': 'application/x-www-form-urlencoded',
-			},
-			redirect: 'follow',
-		});
-
-		return {
-			response: await response.arrayBuffer(),
-			httpCode: response.status,
-		};
+		if (endpoint === '/xml_result_equ.php') {
+			collection =
+				params['action'] === 'poule'
+					? 'poule'
+					: params['action'] === 'initial' || params['action'] === 'classement'
+						? 'classement'
+						: 'tour';
+		}
+		if (collection && response['liste'] !== '')
+			(response['liste'] as Record<string, unknown>)[collection] =
+				sourceCollection(response, collection);
+		if (endpoint === '/xml_chp_renc.php' && response['liste'] !== '') {
+			sourceRecord(response, 'resultat');
+			const list = response['liste'] as Record<string, unknown>;
+			for (const key of ['joueur', 'partie'])
+				list[key] = sourceCollection(response, key, { optional: true });
+		}
+		return response;
 	}
 }
