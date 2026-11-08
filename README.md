@@ -4,6 +4,8 @@ Ce client TypeScript permet d'interagir avec l'API de la Fédération Française
 
 Ce projet est destiné aux développeurs qui souhaitent intégrer des fonctionnalités liées à la FFTT dans leurs applications JS/TS.
 
+Voir [FORK.md](FORK.md) pour la version corrigée utilisée par Ping, son installation et les validations autonomes.
+
 ## Installation
 
 ```shell
@@ -93,7 +95,7 @@ L'API de la FFTT est soumise à des conditions d'utilisation et de confidentiali
 
 #### Méthodes supprimées (depuis 1.1.0)
 
-Les méthodes suivantes ont été supprimées depuis la version 1.1.0 suite à la suppression des endpoints 
+Les méthodes suivantes ont été supprimées depuis la version 1.1.0 suite à la suppression des endpoints
 correspondants sur l'API de la Fédération :
 
 - `historiquePartiesBaseClassement` : récupère l'historique des parties pour un joueur sur la base classement.

@@ -13,7 +13,7 @@ export class HistoriqueClassement extends BaseModel {
 	readonly #phase: number;
 
 	constructor(data: Record<string, unknown>) {
-		super();
+		super(data);
 
 		this.#numerote = vt.exists(data['echelon']);
 		this.#numero = vt.numberIfDefined(data['place']);
@@ -40,5 +40,14 @@ export class HistoriqueClassement extends BaseModel {
 
 	get phase() {
 		return this.#phase;
+	}
+	get donneesOfficielles() {
+		return {
+			saison: this.sourceText('saison'),
+			phase: this.sourceNumber('phase'),
+			echelon: this.sourceText('echelon'),
+			rang: this.sourceNumber('place', 3),
+			points: this.sourceNumber('point', 3),
+		};
 	}
 }

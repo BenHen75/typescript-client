@@ -3,74 +3,71 @@ import type { HttpClientContract } from '#core/http_client_contract';
 
 import { ApiEndpoints } from '#enums/api_endpoints';
 import { TypeOrganisme } from '#enums/type_organisme';
+import { FfttError } from '#errors/fftt_error';
 import { Organisme } from '#models/organisme/organisme';
+import { sourceCollection } from '#utils/source_collection';
 
 export class OrganismeService implements OrganismeContract {
 	readonly #httpClient: HttpClientContract;
-
 	#organismes: Array<Organisme> = [];
-
+	#loading: Promise<void> | undefined;
 	constructor(httpClient: HttpClientContract) {
 		this.#httpClient = httpClient;
 	}
-
 	async organisme(code: string) {
-		await this.#remplirOrganismes();
-
-		return this.#organismes.find((organisme) => organisme.code === code);
+		await this.#load();
+		return this.#organismes.find((item) => item.code === code);
 	}
-
 	async organismesEnfants(code: string) {
-		await this.#remplirOrganismes();
-
-		const parent = this.#organismes.find(
-			(organisme) => organisme.code === code,
-		);
-
-		if (!parent?.id) {
-			return [];
-		}
-
-		return this.#organismes.filter(
-			(organisme) => organisme.idOrganismeParent === parent.id,
-		);
+		await this.#load();
+		const parent = this.#organismes.find((item) => item.code === code);
+		return parent
+			? this.#organismes.filter((item) => item.idOrganismeParent === parent.id)
+			: [];
 	}
-
-	async organismesParType(orgType: TypeOrganisme) {
-		await this.#remplirOrganismes();
-
-		return this.#organismes.filter(
-			(organisme) => organisme.type.code === orgType,
-		);
+	async organismesParType(type: TypeOrganisme) {
+		await this.#load();
+		return this.#organismes.filter((item) => item.type.code === type);
 	}
-
-	async #remplirOrganismes() {
-		if (this.#organismes.length > 0) {
-			return;
+	#load(): Promise<void> {
+		this.#loading ??= this.#fill().catch((error: unknown) => {
+			this.#loading = undefined;
+			throw error instanceof Error
+				? error
+				: new FfttError('FFTT_NETWORK_ERROR');
+		});
+		return this.#loading;
+	}
+	async #fill(): Promise<void> {
+		const types = Object.values(TypeOrganisme);
+		const byId = new Map<number, Organisme>();
+		for (const type of types) {
+			const response = await this.#httpClient.fetch(
+				ApiEndpoints.XML_ORGANISME,
+				{ type },
+			);
+			const models = sourceCollection(response, 'organisme').map(
+				(row) => new Organisme(row),
+			);
+			for (const model of models) {
+				if (!Number.isSafeInteger(model.id) || model.id <= 0)
+					throw new FfttError('FFTT_INVALID_RESPONSE');
+				const previous = byId.get(model.id);
+				if (
+					previous &&
+					(previous.code !== model.code ||
+						previous.libelle !== model.libelle ||
+						previous.idOrganismeParent !== model.idOrganismeParent)
+				)
+					throw new FfttError('FFTT_INVALID_RESPONSE');
+				byId.set(model.id, model);
+			}
+			// Some responses ignore type and already contain the complete tree.
+			if (
+				types.every((kind) => models.some((model) => model.type.code === kind))
+			)
+				break;
 		}
-
-		const promises = [];
-
-		for (const type of Object.values(TypeOrganisme)) {
-			promises.push(async () => {
-				const response = await this.#httpClient.fetch<{
-					liste: {
-						organisme: Record<string, unknown> | Array<Record<string, unknown>>;
-					};
-				}>(ApiEndpoints.XML_ORGANISME, { type });
-
-				if (Array.isArray(response.liste.organisme)) {
-					return response.liste.organisme.map((model) => new Organisme(model));
-				}
-
-				return [new Organisme(response.liste.organisme)];
-			});
-		}
-
-		const results = await Promise.all(promises.map((promise) => promise()));
-
-		for (const result of results) {
-			this.#organismes.push(...result);
-		}
+		this.#organismes = [...byId.values()];
 	}
 }

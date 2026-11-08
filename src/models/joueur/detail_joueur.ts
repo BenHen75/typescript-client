@@ -30,11 +30,11 @@ export class DetailJoueur extends BaseModel {
 
 	readonly #numeroClub: string;
 
-	readonly #sexe: Sexe;
+	readonly #sexe: Sexe | undefined;
 
 	readonly #typeLicence: TypeLicence | undefined;
 
-	readonly #certificationMedicale: CertificationMedicale;
+	readonly #certificationMedicale: CertificationMedicale | undefined;
 
 	readonly #dateValidation: DateTime | undefined;
 
@@ -44,7 +44,7 @@ export class DetailJoueur extends BaseModel {
 
 	readonly #pointsOfficiels: number;
 
-	readonly #categorieAdministrative: CategorieLicenceAdministrative;
+	readonly #categorieAdministrative: CategorieLicenceAdministrative | undefined;
 
 	readonly #pointsMensuels: number | undefined;
 
@@ -54,7 +54,7 @@ export class DetailJoueur extends BaseModel {
 
 	readonly #dateMutation: DateTime | undefined;
 
-	readonly #nationalite: Nationalite;
+	readonly #nationalite: Nationalite | undefined;
 
 	readonly #plusHautGradeArbitre: Diplome | undefined;
 
@@ -63,17 +63,17 @@ export class DetailJoueur extends BaseModel {
 	readonly #plusHautGradeTechnique: Diplome | undefined;
 
 	constructor(data: Record<string, unknown>) {
-		super();
+		super(data);
 
-		this.#id = vt.number(['idlicence']);
+		this.#id = vt.number(data['idlicence']);
 		this.#licence = vt.string(data['licence']);
 		this.#nom = vt.string(data['nom']);
 		this.#prenom = vt.string(data['prenom']);
 		this.#club = vt.string(data['nomclub']);
 		this.#numeroClub = vt.string(data['numclub']);
-		this.#sexe = vt.picklist(data['sexe'], Sexe);
+		this.#sexe = vt.picklistIfDefined(data['sexe'], Sexe);
 		this.#typeLicence = vt.picklistIfDefined(data['type'], TypeLicence);
-		this.#certificationMedicale = vt.picklist(
+		this.#certificationMedicale = vt.picklistIfDefined(
 			data['certif'],
 			CertificationMedicale,
 		);
@@ -84,7 +84,7 @@ export class DetailJoueur extends BaseModel {
 		this.#numerote = vt.exists(data['echelon']);
 		this.#numero = vt.numberIfDefined(data['place'], false);
 		this.#pointsOfficiels = vt.number(data['point']);
-		this.#categorieAdministrative = vt.picklist(
+		this.#categorieAdministrative = vt.picklistIfDefined(
 			data['cat'],
 			CategorieLicenceAdministrative,
 		);
@@ -95,7 +95,7 @@ export class DetailJoueur extends BaseModel {
 			data['mutation'],
 			DATE_FORMAT.DEFAULT,
 		);
-		this.#nationalite = vt.picklist(data['natio'], Nationalite);
+		this.#nationalite = vt.picklistIfDefined(data['natio'], Nationalite);
 		this.#plusHautGradeArbitre = vt.picklistIfDefined(data['arb'], Diplome);
 		this.#plusHautGradeJugeArbitre = vt.picklistIfDefined(data['ja'], Diplome);
 		this.#plusHautGradeTechnique = vt.picklistIfDefined(data['tech'], Diplome);
@@ -128,7 +128,10 @@ export class DetailJoueur extends BaseModel {
 	get sexe() {
 		return {
 			code: this.#sexe,
-			label: enumLabel(Sexe, SexeDict, this.#sexe),
+			label:
+				this.#sexe === undefined
+					? undefined
+					: enumLabel(Sexe, SexeDict, this.#sexe),
 		};
 	}
 
@@ -144,11 +147,14 @@ export class DetailJoueur extends BaseModel {
 	get certificationMedicale() {
 		return {
 			code: this.#certificationMedicale,
-			label: enumLabel(
-				CertificationMedicale,
-				CertificationMedicaleDict,
-				this.#certificationMedicale,
-			),
+			label:
+				this.#certificationMedicale === undefined
+					? undefined
+					: enumLabel(
+							CertificationMedicale,
+							CertificationMedicaleDict,
+							this.#certificationMedicale,
+						),
 		};
 	}
 
@@ -171,11 +177,14 @@ export class DetailJoueur extends BaseModel {
 	get categorieAdministrative() {
 		return {
 			code: this.#categorieAdministrative,
-			label: enumLabel(
-				CategorieLicenceAdministrative,
-				CategorieLicenceAdministrativeDict,
-				this.#categorieAdministrative,
-			),
+			label:
+				this.#categorieAdministrative === undefined
+					? undefined
+					: enumLabel(
+							CategorieLicenceAdministrative,
+							CategorieLicenceAdministrativeDict,
+							this.#categorieAdministrative,
+						),
 		};
 	}
 
@@ -198,7 +207,10 @@ export class DetailJoueur extends BaseModel {
 	get nationalite() {
 		return {
 			code: this.#nationalite,
-			label: enumLabel(Nationalite, NationaliteDict, this.#nationalite),
+			label:
+				this.#nationalite === undefined
+					? undefined
+					: enumLabel(Nationalite, NationaliteDict, this.#nationalite),
 		};
 	}
 
@@ -231,5 +243,30 @@ export class DetailJoueur extends BaseModel {
 					label: enumLabel(Diplome, DiplomeDict, this.#plusHautGradeTechnique),
 				}
 			: undefined;
+	}
+	/** Public source fields retain absence, empty values and unknown federation codes. */
+	get donneesPubliques() {
+		return {
+			licence: this.licence,
+			nom: this.sourceText('nom') ?? '',
+			prenom: this.sourceText('prenom') ?? '',
+			numeroClub: this.sourceText('numclub'),
+			phase: this.sourceNumber('phase'),
+			sexe: this.sourceText('sexe'),
+			nationalite: this.sourceText('natio'),
+			dateValidation: this.sourceDate('validation'),
+			dateMutation: this.sourceDate('mutation'),
+			typeLicence: this.sourceText('type'),
+			categorie: this.sourceText('cat'),
+			echelon: this.sourceText('echelon'),
+			rangNational: this.sourceNumber('place', 3),
+			pointsOfficiels: this.sourceNumber('point', 3),
+			pointsMensuels: this.sourceNumber('pointm', 3),
+			pointsMensuelsPrecedents: this.sourceNumber('apointm', 3),
+			valeurInitiale: this.sourceNumber('initm', 3),
+			gradeArbitre: this.sourceText('arb'),
+			gradeJugeArbitre: this.sourceText('ja'),
+			gradeTechnique: this.sourceText('tech'),
+		};
 	}
 }

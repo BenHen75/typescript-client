@@ -1,18 +1,18 @@
-import type { DateTime } from 'luxon';
+import { DateTime } from 'luxon';
 
 import { BaseModel } from '#models/base_model';
+import { parseFfttMatchScore } from '#utils/match_source';
 import * as vt from '#utils/value_transformer';
-import { DATE_FORMAT } from '#utils/value_transformer';
 
-interface ParametresAccesAuDetail {
-	is_retour: boolean;
-	phase: number;
-	res_1: number;
-	res_2: number;
-	equip_1: string;
-	equip_2: string;
-	equip_id1: number;
-	equip_id2: number;
+export interface ParametresAccesAuDetail {
+	is_retour?: boolean | undefined;
+	phase?: number | undefined;
+	res_1?: number | undefined;
+	res_2?: number | undefined;
+	equip_1?: string | undefined;
+	equip_2?: string | undefined;
+	equip_id1?: number | undefined;
+	equip_id2?: number | undefined;
 }
 
 export class Rencontre extends BaseModel {
@@ -24,13 +24,13 @@ export class Rencontre extends BaseModel {
 
 	readonly #equipeB: string | undefined;
 
-	readonly #scoreEquipeA: number | undefined;
+	readonly #scoreEquipeA: number | null | undefined;
 
-	readonly #scoreEquipeB: number | undefined;
+	readonly #scoreEquipeB: number | null | undefined;
 
 	readonly #lien: string;
 
-	readonly #datePrevue: DateTime;
+	readonly #datePrevue: DateTime | undefined;
 
 	readonly #dateReelle: DateTime | undefined;
 
@@ -38,43 +38,56 @@ export class Rencontre extends BaseModel {
 
 	readonly #numeroClubB: string | undefined;
 
-	readonly #idPoule: number;
+	readonly #idPoule: number | null | undefined;
 
 	readonly #isLive: boolean;
 
 	readonly #parametresAccesAuDetail: ParametresAccesAuDetail;
 
 	constructor(data: Record<string, unknown>) {
-		super();
+		super(data);
 
 		this.#libelle = vt.string(data['libelle']);
 		this.#equipeA = vt.stringIfDefined(data['equa']);
 		this.#equipeB = vt.stringIfDefined(data['equb']);
-		this.#scoreEquipeA = vt.numberIfDefined(data['scorea']);
-		this.#scoreEquipeB = vt.numberIfDefined(data['scoreb']);
+		this.#scoreEquipeA = parseFfttMatchScore(data['scorea']);
+		this.#scoreEquipeB = parseFfttMatchScore(data['scoreb']);
 		this.#lien = vt.string(data['lien']);
-		this.#datePrevue = vt.date(data['dateprevue'], DATE_FORMAT.DEFAULT);
-		this.#dateReelle = vt.dateIfDefined(
-			data['datereelle'],
-			DATE_FORMAT.DEFAULT,
-		);
+		const planned = this.datePrevueIso,
+			actual = this.dateReelleIso;
+		this.#datePrevue = planned
+			? DateTime.fromISO(planned, { zone: 'Europe/Paris' })
+			: undefined;
+		this.#dateReelle = actual
+			? DateTime.fromISO(actual, { zone: 'Europe/Paris' })
+			: undefined;
 		this.#numeroClubA = vt.stringIfDefined(data['ncluba']);
 		this.#numeroClubB = vt.stringIfDefined(data['nclubb']);
-		this.#idPoule = vt.number(data['poule']);
+		this.#idPoule = this.sourceNumber('poule');
 		this.#isLive = vt.string(data['live']) === '1';
 
 		const parsed = new URLSearchParams(vt.string(data['lien']));
+		const numberParam = (key: string) => {
+			const text = parsed.get(key);
+			return text === null || text === ''
+				? undefined
+				: (parseFfttMatchScore(text) ?? undefined);
+		};
+		const textParam = (key: string) => parsed.get(key) ?? undefined;
 
 		this.#id = vt.number(parsed.get('renc_id'));
 		this.#parametresAccesAuDetail = {
-			is_retour: vt.string(parsed.get('is_retour')) === '1',
-			phase: vt.number(parsed.get('phase')),
-			res_1: vt.number(parsed.get('res_1')),
-			res_2: vt.number(parsed.get('res_2')),
-			equip_1: vt.string(parsed.get('equip_1')),
-			equip_2: vt.string(parsed.get('equip_2')),
-			equip_id1: vt.number(parsed.get('equip_id1')),
-			equip_id2: vt.number(parsed.get('equip_id2')),
+			is_retour:
+				parsed.get('is_retour') === null || parsed.get('is_retour') === ''
+					? undefined
+					: parsed.get('is_retour') === '1',
+			phase: numberParam('phase'),
+			res_1: numberParam('res_1'),
+			res_2: numberParam('res_2'),
+			equip_1: textParam('equip_1'),
+			equip_2: textParam('equip_2'),
+			equip_id1: numberParam('equip_id1'),
+			equip_id2: numberParam('equip_id2'),
 		};
 	}
 
@@ -108,6 +121,14 @@ export class Rencontre extends BaseModel {
 
 	get datePrevue() {
 		return this.#datePrevue;
+	}
+
+	get datePrevueIso() {
+		return this.sourceDate('dateprevue');
+	}
+
+	get dateReelleIso() {
+		return this.sourceDate('datereelle');
 	}
 
 	get dateReelle() {

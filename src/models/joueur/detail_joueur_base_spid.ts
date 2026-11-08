@@ -28,11 +28,11 @@ export class DetailJoueurBaseSPID extends BaseModel {
 
 	readonly #numeroClub: string;
 
-	readonly #sexe: Sexe;
+	readonly #sexe: Sexe | undefined;
 
 	readonly #typeLicence: TypeLicence | undefined;
 
-	readonly #certificationMedicale: CertificationMedicale;
+	readonly #certificationMedicale: CertificationMedicale | undefined;
 
 	readonly #dateValidation: DateTime | undefined;
 
@@ -42,10 +42,10 @@ export class DetailJoueurBaseSPID extends BaseModel {
 
 	readonly #pointsOfficiels: number;
 
-	readonly #categorieLicence: CategorieLicenceNommee;
+	readonly #categorieLicence: CategorieLicenceNommee | undefined;
 
 	constructor(data: Record<string, unknown>) {
-		super();
+		super(data);
 
 		this.#id = vt.number(data['idlicence']);
 		this.#licence = vt.string(data['licence']);
@@ -53,9 +53,9 @@ export class DetailJoueurBaseSPID extends BaseModel {
 		this.#prenom = vt.string(data['prenom']);
 		this.#club = vt.string(data['nomclub']);
 		this.#numeroClub = vt.string(data['numclub']);
-		this.#sexe = vt.picklist(data['sexe'], Sexe);
+		this.#sexe = vt.picklistIfDefined(data['sexe'], Sexe);
 		this.#typeLicence = vt.picklistIfDefined(data['type'], TypeLicence);
-		this.#certificationMedicale = vt.picklist(
+		this.#certificationMedicale = vt.picklistIfDefined(
 			data['certif'],
 			CertificationMedicale,
 		);
@@ -66,7 +66,10 @@ export class DetailJoueurBaseSPID extends BaseModel {
 		this.#numerote = vt.exists(data['echelon']);
 		this.#numero = vt.numberIfDefined(data['place'], false);
 		this.#pointsOfficiels = vt.number(data['point']);
-		this.#categorieLicence = vt.picklist(data['cat'], CategorieLicenceNommee);
+		this.#categorieLicence = vt.picklistIfDefined(
+			data['cat'],
+			CategorieLicenceNommee,
+		);
 	}
 
 	get id() {
@@ -96,7 +99,10 @@ export class DetailJoueurBaseSPID extends BaseModel {
 	get sexe() {
 		return {
 			code: this.#sexe,
-			label: enumLabel(Sexe, SexeDict, this.#sexe),
+			label:
+				this.#sexe === undefined
+					? undefined
+					: enumLabel(Sexe, SexeDict, this.#sexe),
 		};
 	}
 
@@ -112,11 +118,14 @@ export class DetailJoueurBaseSPID extends BaseModel {
 	get certificationMedicale() {
 		return {
 			code: this.#certificationMedicale,
-			label: enumLabel(
-				CertificationMedicale,
-				CertificationMedicaleDict,
-				this.#certificationMedicale,
-			),
+			label:
+				this.#certificationMedicale === undefined
+					? undefined
+					: enumLabel(
+							CertificationMedicale,
+							CertificationMedicaleDict,
+							this.#certificationMedicale,
+						),
 		};
 	}
 
@@ -139,11 +148,14 @@ export class DetailJoueurBaseSPID extends BaseModel {
 	get categorieLicence() {
 		return {
 			code: this.#categorieLicence,
-			label: enumLabel(
-				CategorieLicenceNommee,
-				CategorieLicenceNommeeDict,
-				this.#categorieLicence,
-			),
+			label:
+				this.#categorieLicence === undefined
+					? undefined
+					: enumLabel(
+							CategorieLicenceNommee,
+							CategorieLicenceNommeeDict,
+							this.#categorieLicence,
+						),
 		};
 	}
 }

@@ -1,6 +1,13 @@
-import type { DateTime } from 'luxon';
+import { DateTime } from 'luxon';
 
 import { BaseModel } from '#models/base_model';
+import {
+	sourceIdentifier,
+	sourceVictory,
+	sourceForfeit,
+	sourceOpponentPoints,
+	type DonneesPartieOfficielle,
+} from '#models/partie/official_fields';
 import { parseClassementJoueur, separerNomPrenom } from '#utils/joueur_utils';
 import * as vt from '#utils/value_transformer';
 import { DATE_FORMAT } from '#utils/value_transformer';
@@ -29,9 +36,11 @@ export class PartieBaseSPID extends BaseModel {
 	readonly #coefficient: number;
 
 	constructor(data: Record<string, unknown>) {
-		super();
+		super(data);
 
-		this.#date = vt.date(data['date'], DATE_FORMAT.DEFAULT);
+		this.#date =
+			vt.dateIfDefined(data['date'], DATE_FORMAT.DEFAULT) ??
+			DateTime.invalid('Missing date');
 		[this.#nom, this.#prenom] = separerNomPrenom(vt.string(data['nom']));
 		this.#numerote = vt.string(data['classement']).startsWith('N');
 		this.#epreuve = vt.string(data['epreuve']);
@@ -87,5 +96,24 @@ export class PartieBaseSPID extends BaseModel {
 
 	get coefficient() {
 		return this.#coefficient;
+	}
+	/** Strict source projection is lazy so callers can isolate an invalid observation. */
+	get donneesOfficielles(): DonneesPartieOfficielle {
+		const coefficient = this.sourceNumber('coefchamp', 3);
+		return {
+			idPartie: sourceIdentifier(this.sourceText('idpartie')),
+			date: this.sourceDate('date') ?? null,
+			licence: null,
+			licenceAdversaire: null,
+			nomAdversaire: this.sourceText('nom')?.replaceAll(/\s+/g, ' ') ?? null,
+			pointsAdversaire: sourceOpponentPoints(this.sourceText('classement')),
+			codeChampionnat: null,
+			epreuve: this.sourceText('epreuve')?.replaceAll(/\s+/g, ' ') ?? null,
+			numeroJournee: null,
+			coefficient: coefficient === 0 ? null : (coefficient ?? null),
+			pointsObtenus: null,
+			victoire: sourceVictory(this.sourceText('victoire')),
+			forfait: sourceForfeit(this.sourceText('forfait')),
+		};
 	}
 }

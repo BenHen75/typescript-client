@@ -24,7 +24,7 @@ export class Equipe extends BaseModel {
 	readonly #division: Division;
 
 	constructor(data: Record<string, unknown>) {
-		super();
+		super(data);
 
 		this.#idEpreuve = vt.number(data['idepr']);
 		this.#libelleEpreuve = vt.string(data['libepr']);

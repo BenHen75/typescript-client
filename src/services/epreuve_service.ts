@@ -5,6 +5,7 @@ import type { TypeEpreuve } from '#enums/type_epreuve';
 import { ApiEndpoints } from '#enums/api_endpoints';
 import { Division } from '#models/epreuve/division';
 import { Epreuve } from '#models/epreuve/epreuve';
+import { sourceCollection } from '#utils/source_collection';
 
 export class EpreuveService implements EpreuveContract {
 	readonly #httpClient: HttpClientContract;
@@ -26,11 +27,9 @@ export class EpreuveService implements EpreuveContract {
 			type: typeEpreuve,
 		});
 
-		if (response.liste === '') {
-			return [];
-		}
-
-		return response.liste.division.map((model) => new Division(model));
+		return sourceCollection(response, 'division').map(
+			(model) => new Division(model),
+		);
 	}
 
 	async rechercherEpreuves(idOrganisme: number, typeEpreuve: TypeEpreuve) {
@@ -41,10 +40,8 @@ export class EpreuveService implements EpreuveContract {
 			type: typeEpreuve,
 		});
 
-		if (response.liste === '') {
-			return [];
-		}
-
-		return response.liste.epreuve.map((model) => new Epreuve(model));
+		return sourceCollection(response, 'epreuve').map(
+			(model) => new Epreuve(model),
+		);
 	}
 }

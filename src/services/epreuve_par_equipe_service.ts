@@ -1,6 +1,7 @@
 import type { EpreuveParEquipeContract } from '#contracts/epreuve_par_equipe_contract';
 import type { RequestParams } from '#core/abstract_http_client';
 import type { HttpClientContract } from '#core/http_client_contract';
+import type { ParametresAccesAuDetail } from '#models/epreuve/par_equipes/rencontre/rencontre';
 
 import { ApiEndpoints } from '#enums/api_endpoints';
 import { EquipePoule } from '#models/epreuve/par_equipes/poule/equipe_poule';
@@ -39,16 +40,7 @@ export class EpreuveParEquipeService implements EpreuveParEquipeContract {
 
 	async detailRencontre(
 		rencontreId: number,
-		extraParams?: {
-			is_retour: boolean;
-			phase: number;
-			res_1: number;
-			res_2: number;
-			equip_1: string;
-			equip_2: string;
-			equip_id1: number;
-			equip_id2: number;
-		},
+		extraParams?: ParametresAccesAuDetail,
 	) {
 		const response = await this.#httpClient.fetch<{
 			liste:

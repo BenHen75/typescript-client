@@ -5,6 +5,7 @@ import type { DetailJoueurBaseSPID } from '#models/joueur/detail_joueur_base_spi
 import type { HistoriqueClassement } from '#models/joueur/historique_classement';
 import type { JoueurBaseClassement } from '#models/joueur/joueur_base_classement';
 import type { JoueurBaseSPID } from '#models/joueur/joueur_base_spid';
+import type { PartieBaseClassement } from '#models/partie/partie_base_classement';
 import type { PartieBaseSPID } from '#models/partie/partie_base_spid';
 
 export interface JoueurContract {
@@ -147,4 +148,9 @@ export interface JoueurContract {
 	historiqueClassementOfficiel(
 		licence: string,
 	): Promise<Array<HistoriqueClassement>>;
+	/** Retired interface, available only when the caller explicitly enables it. */
+	historiquePartiesBaseClassementLegacy(
+		licence: string,
+		options?: { enabled: boolean },
+	): Promise<Array<PartieBaseClassement>>;
 }

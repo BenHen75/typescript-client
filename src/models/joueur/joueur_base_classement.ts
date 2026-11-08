@@ -15,7 +15,7 @@ export class JoueurBaseClassement extends BaseModel {
 	readonly #classement: number | undefined;
 
 	constructor(data: Record<string, unknown>) {
-		super();
+		super(data);
 
 		this.#licence = vt.string(data['licence']);
 		this.#nom = vt.string(data['nom']);

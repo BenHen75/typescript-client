@@ -15,7 +15,7 @@ export class JoueurBaseSPID extends BaseModel {
 
 	readonly #numeroClub: string | undefined;
 
-	readonly #sexe: Sexe;
+	readonly #sexe: Sexe | undefined;
 
 	readonly #numerote: boolean;
 
@@ -26,14 +26,21 @@ export class JoueurBaseSPID extends BaseModel {
 	readonly #classementOfficiel: number;
 
 	constructor(data: Record<string, unknown>) {
-		super();
+		super(data);
 
 		this.#licence = vt.string(data['licence']);
 		this.#nom = vt.string(data['nom']);
 		this.#prenom = vt.string(data['prenom']);
-		this.#club = vt.stringIfDefined(data['club']);
-		this.#numeroClub = vt.stringIfDefined(data['nclub']);
-		this.#sexe = vt.picklist(data['sexe'], Sexe);
+		const club = vt.stringIfDefined(data['club']);
+		const nclub = vt.stringIfDefined(data['nclub']);
+		// SPID feeds may invert the two historical fields. Only a club number is an identifier.
+		this.#numeroClub = [club, nclub].find(
+			(value) => value !== undefined && /^\d{8}$/.test(value),
+		);
+		this.#club = [club, nclub].find(
+			(value) => value !== undefined && !/^\d{8}$/.test(value),
+		);
+		this.#sexe = vt.picklistIfDefined(data['sexe'], Sexe);
 		this.#numerote = vt.exists(data['echelon']);
 		this.#numero = vt.numberIfDefined(data['place'], false);
 		this.#pointsOfficiels = vt.number(data['points']);
@@ -65,7 +72,10 @@ export class JoueurBaseSPID extends BaseModel {
 	get sexe() {
 		return {
 			code: this.#sexe,
-			label: enumLabel(Sexe, SexeDict, this.#sexe),
+			label:
+				this.#sexe === undefined
+					? undefined
+					: enumLabel(Sexe, SexeDict, this.#sexe),
 		};
 	}
 
@@ -83,5 +93,21 @@ export class JoueurBaseSPID extends BaseModel {
 
 	get classementOfficiel() {
 		return this.#classementOfficiel;
+	}
+	get donneesPubliques() {
+		// Read both source values to reject malformed fields rather than silently invent a club.
+		const clubs = [this.sourceText('club'), this.sourceText('nclub')];
+		return {
+			licence: this.licence,
+			nom: this.sourceText('nom') ?? '',
+			prenom: this.sourceText('prenom') ?? '',
+			numeroClub: clubs.find(
+				(value) => typeof value === 'string' && /^\d{8}$/.test(value),
+			),
+			sexe: this.sourceText('sexe'),
+			echelon: this.sourceText('echelon'),
+			rangNational: this.sourceNumber('place', 3),
+			pointsOfficiels: this.sourceNumber('points', 3),
+		};
 	}
 }

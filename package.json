@@ -1,10 +1,10 @@
 {
     "name": "@fftt-api/typescript-client",
-    "version": "2026.7.0",
+    "version": "2026.7.0-ping.1",
     "description": "Client TypeScript non-officiel de l'API FFTT 🏓",
     "license": "MIT",
     "repository": {
-        "url": "git+https://github.com/fftt-api/typescript-client.git"
+        "url": "git+https://github.com/BenHen75/typescript-client.git"
     },
     "bin": {
         "serial": "bin/run.mjs"
@@ -13,7 +13,8 @@
         "bin",
         "dist",
         "README.md",
-        "LICENSE"
+        "LICENSE",
+        "FORK.md"
     ],
     "type": "module",
     "main": "./dist/index.js",
@@ -47,12 +48,15 @@
         "dev": "tsdown --watch",
         "fmt": "oxfmt",
         "fmt:check": "oxfmt --check",
-        "lint": "oxlint",
+        "lint": "oxlint --tsconfig tsconfig.check.json src tests/unit",
         "lint:fix": "oxlint --fix",
         "prepublishOnly": "pnpm run ci",
-        "test": "vitest",
-        "test:ci": "vitest --watch=false --coverage",
-        "test:coverage": "vitest --coverage"
+        "test": "vitest tests/unit",
+        "test:ci": "vitest run tests/unit --coverage",
+        "test:coverage": "vitest --coverage",
+        "test:functional": "vitest run tests/functional",
+        "test:unit": "vitest run tests/unit",
+        "typecheck": "tsc --noEmit -p tsconfig.check.json"
     },
     "dependencies": {
         "entities": "^8.0.0",

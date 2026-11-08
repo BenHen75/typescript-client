@@ -1,7 +1,10 @@
 import type { EquipePoule } from '#models/epreuve/par_equipes/poule/equipe_poule';
 import type { Poule } from '#models/epreuve/par_equipes/poule/poule';
 import type { DetailRencontre } from '#models/epreuve/par_equipes/rencontre/detail_rencontre';
-import type { Rencontre } from '#models/epreuve/par_equipes/rencontre/rencontre';
+import type {
+	ParametresAccesAuDetail,
+	Rencontre,
+} from '#models/epreuve/par_equipes/rencontre/rencontre';
 
 export interface EpreuveParEquipeContract {
 	/**
@@ -62,15 +65,6 @@ export interface EpreuveParEquipeContract {
 	 */
 	detailRencontre(
 		rencontreId: number,
-		extraParams: {
-			is_retour: boolean;
-			phase: number;
-			res_1: number;
-			res_2: number;
-			equip_1: string;
-			equip_2: string;
-			equip_id1: number;
-			equip_id2: number;
-		},
+		extraParams?: ParametresAccesAuDetail,
 	): Promise<DetailRencontre | undefined>;
 }

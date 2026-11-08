@@ -77,8 +77,10 @@ export const DiplomeDict = {
 	BREVET_ETAT_EDUCATEUR_SPORTIF_2: "Brevet d'État Éducateur Sportif (niveau 2)",
 	BREVET_ETAT_EDUCATEUR_SPORTIF_3: "Brevet d'État Éducateur Sportif (niveau 3)",
 	PROFESSORAT_DE_SPORT: 'Professorat de sport',
-	ANIMATEUR_PING_SANTE_BIEN_ETRE_MODULE_A: 'Animateur Ping Santé Bien-être (Module A)',
-	MONITEUR_PING_SANTE_SUR_ORDONNANCE_MODULE_B: 'Moniteur Ping Santé sur Ordonnance (Module B)',
+	ANIMATEUR_PING_SANTE_BIEN_ETRE_MODULE_A:
+		'Animateur Ping Santé Bien-être (Module A)',
+	MONITEUR_PING_SANTE_SUR_ORDONNANCE_MODULE_B:
+		'Moniteur Ping Santé sur Ordonnance (Module B)',
 	ANIMATEUR_PING_PARKINSON: 'Animateur Ping Parkinson',
 
 	AGENT_DEVELOPPEMENT: 'Agent de développement',
